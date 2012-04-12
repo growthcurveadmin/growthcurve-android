@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Growthcurve</string>
+    <string name="Connect">Connect</string>
+    <string name="BaseURL">Base URL</string>
+    <string name="Username">Username</string>
+    <string name="Password">Password</string>
+    <string name="the_username_on_growthcurve_on_line">The username on Growthcurve-on-line</string>
+    <string name="Settings">Settings</string>
+
+</resources>

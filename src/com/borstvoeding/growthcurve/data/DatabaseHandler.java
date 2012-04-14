@@ -79,6 +79,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 			return child;
 		} finally {
 			safeClose(cursor);
+			db.close();
 		}
 	}
 
@@ -109,6 +110,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 			return childrensList;
 		} finally {
 			safeClose(cursor);
+			db.close();
 		}
 	}
 
@@ -121,6 +123,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 			return cursor.getCount();
 		} finally {
 			safeClose(cursor);
+			db.close();
 		}
 	}
 

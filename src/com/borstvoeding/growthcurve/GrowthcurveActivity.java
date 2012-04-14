@@ -27,7 +27,6 @@ public class GrowthcurveActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// setContentView(R.layout.main);
 
 		DatabaseHandler db = new DatabaseHandler(this);
 
@@ -46,11 +45,11 @@ public class GrowthcurveActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
+		startActivity(new WeightChart().execute(getApplicationContext()));
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle item selection
 		switch (item.getItemId()) {
 		case ID_MENU_SETTINGS:
 			Intent settingsIntent = new Intent(getApplicationContext(),

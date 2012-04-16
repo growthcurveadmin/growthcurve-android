@@ -238,6 +238,15 @@ public class WeightChart {
 			12145.8, 12166.7, 12197.9, 12218.8, 12239.6, 12260.4, 12281.3,
 			12302.1, 12322.9, 12343.8, 12343.8 };
 
+	private static final double[] child1Moments = new double[] { 1147489200,
+			1149044400, 1150686000, 1153105200, 1156129200, 1159326000,
+			1165896000, 1171339200, 1176174000, 1182826800, 1196136000,
+			1216782000, 1226894400, 1290830400 };
+
+	private static final double[] child1Weights = new double[] { 4450, 4640,
+			5245, 5795, 6525, 7255, 8220, 8860, 9330, 10390, 11300, 13600,
+			14000, 16500 };
+
 	public Intent execute(Context context) {
 		String[] titles = new String[] { "2+", "1+", "0", "1-", "2-" };
 		List<double[]> values = new ArrayList<double[]>();
@@ -248,12 +257,12 @@ public class WeightChart {
 		values.add(ref2);
 
 		int[] lineColors = new int[] { Color.BLACK, Color.BLACK, Color.BLACK,
-				Color.BLACK, Color.BLACK };
+				Color.BLACK, Color.BLACK, Color.RED };
 		int[] colorsBelow = new int[] { Color.WHITE, COLOR_IN_RANGE,
 				COLOR_IN_RANGE, Color.WHITE, Color.WHITE };
 		PointStyle[] styles = new PointStyle[] { PointStyle.POINT,
 				PointStyle.POINT, PointStyle.POINT, PointStyle.POINT,
-				PointStyle.POINT };
+				PointStyle.POINT, PointStyle.CIRCLE };
 		XYMultipleSeriesRenderer renderer = buildRenderer(lineColors, styles);
 		int weeksToPlot = 52;
 		setChartSettings(renderer, //
@@ -280,13 +289,31 @@ public class WeightChart {
 		for (int i = 0; i < length; i++) {
 			XYSeriesRenderer seriesRenderer = (XYSeriesRenderer) renderer
 					.getSeriesRendererAt(i);
-			seriesRenderer.setFillBelowLine(true);
-			seriesRenderer.setFillBelowLineColor(colorsBelow[i]);
-			seriesRenderer.setLineWidth(2.5f);
-			seriesRenderer.setDisplayChartValues(false);
+			if (i < length - 1) {
+				seriesRenderer.setFillBelowLine(true);
+				seriesRenderer.setFillBelowLineColor(colorsBelow[i]);
+				seriesRenderer.setLineWidth(2.5f);
+				seriesRenderer.setDisplayChartValues(false);
+			} else {
+				seriesRenderer.setFillBelowLine(false);
+				seriesRenderer.setLineWidth(3.5f);
+				seriesRenderer.setDisplayChartValues(true);
+				seriesRenderer.setChartValuesTextSize(10f);
+			}
 		}
-		return ChartFactory.getLineChartIntent(context,
-				buildDataset(titles, values, weeksToPlot), renderer);
+		XYMultipleSeriesDataset refDataset = buildRefDataset(titles, values,
+				weeksToPlot);
+		XYSeries series = new XYSeries("Child 1");
+		double dob = child1Moments[0]; // TODO: read from the child
+		for (int i = 0; i < child1Moments.length; i++) {
+			double moment = child1Moments[i] - dob;
+			if (moment > refXs[weeksToPlot]) {
+				break;
+			}
+			series.add(moment / SECONDS_PER_MONTH_AVG, child1Weights[i]);
+		}
+		refDataset.addSeries(series);
+		return ChartFactory.getLineChartIntent(context, refDataset, renderer);
 	}
 
 	/**
@@ -337,7 +364,7 @@ public class WeightChart {
 	 *            the values
 	 * @return the XY multiple bar dataset
 	 */
-	protected XYMultipleSeriesDataset buildDataset(String[] titles,
+	protected XYMultipleSeriesDataset buildRefDataset(String[] titles,
 			List<double[]> values, int nrOfSamplesToUse) {
 		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
 		int length = titles.length;

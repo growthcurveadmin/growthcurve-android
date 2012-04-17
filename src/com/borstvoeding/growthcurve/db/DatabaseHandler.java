@@ -1,4 +1,4 @@
-package com.borstvoeding.growthcurve.data;
+package com.borstvoeding.growthcurve.db;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.borstvoeding.growthcurve.data.Child.Gender;
+import com.borstvoeding.growthcurve.db.Child.Gender;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 2;

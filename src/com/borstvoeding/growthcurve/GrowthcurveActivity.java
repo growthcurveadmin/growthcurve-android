@@ -14,9 +14,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import com.borstvoeding.growthcurve.data.Child;
-import com.borstvoeding.growthcurve.data.Child.Gender;
-import com.borstvoeding.growthcurve.data.DatabaseHandler;
+import com.borstvoeding.growthcurve.charts.WeightChart;
+import com.borstvoeding.growthcurve.db.Child;
+import com.borstvoeding.growthcurve.db.DatabaseHandler;
+import com.borstvoeding.growthcurve.db.Child.Gender;
 
 public class GrowthcurveActivity extends ListActivity {
 	private static final Logger LOG = Logger

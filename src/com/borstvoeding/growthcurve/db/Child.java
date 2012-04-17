@@ -1,4 +1,4 @@
-package com.borstvoeding.growthcurve.data;
+package com.borstvoeding.growthcurve.db;
 
 import java.text.MessageFormat;
 

@@ -16,8 +16,8 @@ import android.widget.ListView;
 
 import com.borstvoeding.growthcurve.charts.WeightChart;
 import com.borstvoeding.growthcurve.db.Child;
-import com.borstvoeding.growthcurve.db.DatabaseHandler;
 import com.borstvoeding.growthcurve.db.Child.Gender;
+import com.borstvoeding.growthcurve.db.DatabaseHandler;
 
 public class GrowthcurveActivity extends ListActivity {
 	private static final Logger LOG = Logger
@@ -46,7 +46,10 @@ public class GrowthcurveActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		startActivity(new WeightChart().execute(getApplicationContext()));
+		// TODO: load the selected child's measurements from the db... (the rest
+		// is already there)
+		Child child = new Child("child1", 1147489200, Gender.male, null);
+		startActivity(new WeightChart().execute(getApplicationContext(), child));
 	}
 
 	@Override

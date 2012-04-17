@@ -1,6 +1,8 @@
 package com.borstvoeding.growthcurve.db;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Child {
 	public enum Gender {
@@ -13,12 +15,11 @@ public class Child {
 	private final Gender gender;
 	private final String story;
 
+	private final List<Measurement> measurements = new ArrayList<Measurement>();
+
 	public Child(int id, String name, long dob, Gender gender, String story) {
+		this(name, dob, gender, story);
 		this.id = id;
-		this.name = name;
-		this.dob = dob;
-		this.gender = gender;
-		this.story = story;
 	}
 
 	public Child(String name, long dob, Gender gender, String story) {
@@ -26,6 +27,27 @@ public class Child {
 		this.dob = dob;
 		this.gender = gender;
 		this.story = story;
+		initMeasurements();
+	}
+
+	private void initMeasurements() {
+		long length = 0;
+		String story = "";
+		// TODO: add length
+		measurements.add(new Measurement(1, 1147489200, 4450, length, story));
+		measurements.add(new Measurement(1, 1149044400, 4640, length, story));
+		measurements.add(new Measurement(1, 1150686000, 5245, length, story));
+		measurements.add(new Measurement(1, 1153105200, 5795, length, story));
+		measurements.add(new Measurement(1, 1156129200, 6525, length, story));
+		measurements.add(new Measurement(1, 1159326000, 7255, length, story));
+		measurements.add(new Measurement(1, 1165896000, 8220, length, story));
+		measurements.add(new Measurement(1, 1171339200, 8860, length, story));
+		measurements.add(new Measurement(1, 1176174000, 9330, length, story));
+		measurements.add(new Measurement(1, 1182826800, 10390, length, story));
+		measurements.add(new Measurement(1, 1196136000, 11300, length, story));
+		measurements.add(new Measurement(1, 1216782000, 13600, length, story));
+		measurements.add(new Measurement(1, 1226894400, 14000, length, story));
+		measurements.add(new Measurement(1, 1290830400, 16500, length, story));
 	}
 
 	public int getId() {
@@ -52,5 +74,9 @@ public class Child {
 	public String toString() {
 		return MessageFormat.format("Child: {0}:{1}", new Object[] { getId(),
 				getName() });
+	}
+
+	public List<Measurement> getMeasurements() {
+		return measurements;
 	}
 }

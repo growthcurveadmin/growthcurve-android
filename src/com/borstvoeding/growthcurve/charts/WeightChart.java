@@ -16,8 +16,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 
 import com.borstvoeding.growthcurve.db.Child;
-import com.borstvoeding.growthcurve.db.Child.Gender;
-import com.borstvoeding.growthcurve.db.ChildMeasurement1;
 import com.borstvoeding.growthcurve.db.Measurement;
 import com.borstvoeding.growthcurve.ref.BoyWeight;
 import com.borstvoeding.growthcurve.ref.Moments;
@@ -26,7 +24,7 @@ public class WeightChart {
 	private static final int COLOR_IN_RANGE = Color.rgb(193, 255, 193);
 	private static final int SECONDS_PER_MONTH_AVG = 2628000;
 
-	public Intent execute(Context context) {
+	public Intent execute(Context context, Child child) {
 		String[] titles = new String[] { "2+", "1+", "0", "1-", "2-" };
 		List<double[]> values = new ArrayList<double[]>();
 		values.add(BoyWeight.refM2);
@@ -83,11 +81,8 @@ public class WeightChart {
 		XYMultipleSeriesDataset refDataset = buildRefDataset(titles, values,
 				weeksToPlot);
 		XYSeries series = new XYSeries("Child 1");
-		ChildMeasurement1 cm = new ChildMeasurement1();
-		Child child1 = new Child("child1", cm.getMeasurements().get(0)
-				.getMoment(), Gender.male, null);
-		for (Measurement measurement : cm.getMeasurements()) {
-			long moment = measurement.getMoment() - child1.getDob();
+		for (Measurement measurement : child.getMeasurements()) {
+			long moment = measurement.getMoment() - child.getDob();
 			if (moment > Moments.refMoments[weeksToPlot]) {
 				break;
 			}

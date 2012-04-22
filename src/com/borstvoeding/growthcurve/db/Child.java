@@ -3,8 +3,16 @@ package com.borstvoeding.growthcurve.db;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Child {
+	private static final Logger LOG = Logger.getLogger(Child.class.getName());
+
 	public enum Gender {
 		male, female
 	}
@@ -30,6 +38,24 @@ public class Child {
 		initMeasurements();
 	}
 
+	public static Child load(JSONObject jSONObject) {
+		try {
+			Child child = new Child(jSONObject.getInt("child_id"),
+					jSONObject.getString("name"), jSONObject.getLong("dob"),
+					confGender(jSONObject.getString("gender")),
+					jSONObject.getString("story"));
+			child.initMeasurements(jSONObject.getJSONArray("measurements"));
+			return child;
+		} catch (JSONException e) {
+			LOG.log(Level.WARNING, "Could not load the child from json data...");
+			return null;
+		}
+	}
+
+	private static Gender confGender(String gender) {
+		return "m".equalsIgnoreCase(gender) ? Gender.male : Gender.female;
+	}
+
 	private void initMeasurements() {
 		long length = 0;
 		String story = "";
@@ -48,6 +74,11 @@ public class Child {
 		measurements.add(new Measurement(1, 1216782000, 13600, length, story));
 		measurements.add(new Measurement(1, 1226894400, 14000, length, story));
 		measurements.add(new Measurement(1, 1290830400, 16500, length, story));
+	}
+
+	private void initMeasurements(JSONArray jsonArray) {
+		initMeasurements();
+		// TODO: read the measurements
 	}
 
 	public int getId() {

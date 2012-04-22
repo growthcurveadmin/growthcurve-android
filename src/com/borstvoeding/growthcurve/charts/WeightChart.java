@@ -41,12 +41,15 @@ public class WeightChart {
 				PointStyle.POINT, PointStyle.POINT, PointStyle.POINT,
 				PointStyle.POINT, PointStyle.CIRCLE };
 		XYMultipleSeriesRenderer renderer = buildRenderer(lineColors, styles);
+		// TODO: determine weeks to plot based on the age of the child
 		int weeksToPlot = 52;
 		setChartSettings(renderer, //
 				"Weight", //
 				"months", //
 				"grams", //
+				// TODO: determine the max-month on the age of the child
 				0, 13, //
+				// TODO: determine the max-range on the ref-curve-end-values
 				1800, 14000, //
 				Color.GRAY, Color.LTGRAY);
 		renderer.setXLabels(12);

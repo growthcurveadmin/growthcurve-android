@@ -44,7 +44,7 @@ public class GrowthcurveActivity extends ListActivity {
 		} else {
 			LOG.log(Level.INFO, "Children already in db...");
 			List<Child> children = readChildren();
-			db.cleanoutChildren();
+			db.cleanoutChildrenList();
 			for (Child child : children) {
 				db.addChild(child);
 			}

@@ -46,7 +46,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		onCreate(db);
 	}
 
-	public void cleanoutChildren() {
+	public void cleanoutChildrenList() {
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.execSQL("DELETE FROM " + TABLE_CHILDREN);
 		db.close();

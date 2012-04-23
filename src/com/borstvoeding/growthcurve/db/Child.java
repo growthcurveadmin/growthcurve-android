@@ -44,10 +44,12 @@ public class Child {
 					jSONObject.getString("name"), jSONObject.getLong("dob"),
 					confGender(jSONObject.getString("gender")),
 					jSONObject.getString("story"));
-			child.initMeasurements(jSONObject.getJSONArray("measurements"));
+			child.loadMeasurements(jSONObject.getJSONArray("measurements"));
 			return child;
 		} catch (JSONException e) {
-			LOG.log(Level.WARNING, "Could not load the child from json data...");
+			LOG.log(Level.WARNING,
+					"Could not load the child from json data...:"
+							+ e.getMessage() + "\n" + e.getStackTrace());
 			return null;
 		}
 	}
@@ -60,25 +62,37 @@ public class Child {
 		long length = 0;
 		String story = "";
 		// TODO: add length
-		measurements.add(new Measurement(1, 1147489200, 4450, length, story));
-		measurements.add(new Measurement(1, 1149044400, 4640, length, story));
-		measurements.add(new Measurement(1, 1150686000, 5245, length, story));
-		measurements.add(new Measurement(1, 1153105200, 5795, length, story));
-		measurements.add(new Measurement(1, 1156129200, 6525, length, story));
-		measurements.add(new Measurement(1, 1159326000, 7255, length, story));
-		measurements.add(new Measurement(1, 1165896000, 8220, length, story));
-		measurements.add(new Measurement(1, 1171339200, 8860, length, story));
-		measurements.add(new Measurement(1, 1176174000, 9330, length, story));
-		measurements.add(new Measurement(1, 1182826800, 10390, length, story));
-		measurements.add(new Measurement(1, 1196136000, 11300, length, story));
-		measurements.add(new Measurement(1, 1216782000, 13600, length, story));
-		measurements.add(new Measurement(1, 1226894400, 14000, length, story));
-		measurements.add(new Measurement(1, 1290830400, 16500, length, story));
+		measurements.add(new Measurement(1, 1147489200, 4450L, length, story));
+		measurements.add(new Measurement(1, 1149044400, 4640L, length, story));
+		measurements.add(new Measurement(1, 1150686000, 5245L, length, story));
+		measurements.add(new Measurement(1, 1153105200, 5795L, length, story));
+		measurements.add(new Measurement(1, 1156129200, 6525L, length, story));
+		measurements.add(new Measurement(1, 1159326000, 7255L, length, story));
+		measurements.add(new Measurement(1, 1165896000, 8220L, length, story));
+		measurements.add(new Measurement(1, 1171339200, 8860L, length, story));
+		measurements.add(new Measurement(1, 1176174000, 9330L, length, story));
+		measurements.add(new Measurement(1, 1182826800, 10390L, length, story));
+		measurements.add(new Measurement(1, 1196136000, 11300L, length, story));
+		measurements.add(new Measurement(1, 1216782000, 13600L, length, story));
+		measurements.add(new Measurement(1, 1226894400, 14000L, length, story));
+		measurements.add(new Measurement(1, 1290830400, 16500L, length, story));
 	}
 
-	private void initMeasurements(JSONArray jsonArray) {
-		initMeasurements();
-		// TODO: read the measurements
+	private void loadMeasurements(JSONArray array) throws JSONException {
+		for (int i = 0; i < array.length(); i++) {
+			JSONObject obj = array.getJSONObject(i);
+			Measurement m = new Measurement(//
+					obj.getLong("measurement_id"), //
+					obj.getLong("moment"), //
+					getLong(obj, "weight"), //
+					obj.has("length") ? obj.getLong("length") : null, //
+					obj.has("story") ? obj.getString("story") : null);
+			measurements.add(m);
+		}
+	}
+
+	private Long getLong(JSONObject obj, String name) throws JSONException {
+		return obj.has(name) ? obj.getLong(name) : null;
 	}
 
 	public int getId() {

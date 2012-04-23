@@ -3,11 +3,11 @@ package com.borstvoeding.growthcurve.db;
 public class Measurement {
 	private final long id;
 	private final long moment;
-	private final long weight;
-	private final long length;
+	private final Long weight;
+	private final Long length;
 	private final String story;
 
-	public Measurement(long id, long moment, long weight, long length,
+	public Measurement(long id, long moment, Long weight, Long length,
 			String story) {
 		this.id = id;
 		this.moment = moment;
@@ -24,11 +24,11 @@ public class Measurement {
 		return moment;
 	}
 
-	public long getWeight() {
+	public Long getWeight() {
 		return weight;
 	}
 
-	public long getLength() {
+	public Long getLength() {
 		return length;
 	}
 

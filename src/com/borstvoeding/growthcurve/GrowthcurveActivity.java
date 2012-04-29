@@ -1,7 +1,6 @@
 package com.borstvoeding.growthcurve;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -9,7 +8,9 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.borstvoeding.growthcurve.charts.WeightChart;
 import com.borstvoeding.growthcurve.db.Child;
@@ -29,6 +31,7 @@ public class GrowthcurveActivity extends ListActivity {
 			.getLogger(GrowthcurveActivity.class.getName());
 
 	private static final int ID_MENU_SETTINGS = 0;
+	private static final int ID_MENU_RELOAD = 1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -36,77 +39,37 @@ public class GrowthcurveActivity extends ListActivity {
 
 		DatabaseHandler db = new DatabaseHandler(this);
 		if (db.getChildrensCount() == 0) {
-			LOG.log(Level.INFO, "Adding children");
-			db.addChild(new Child("Jan", new Date().getTime(), Gender.male,
-					"Some nice story"));
-			db.addChild(new Child("Klazien", new Date().getTime(),
-					Gender.female, "Some whining"));
-		} else {
-			LOG.log(Level.INFO, "Children already in db...");
-			List<Child> children = readChildren();
-			db.cleanoutChildrenList();
-			for (Child child : children) {
-				db.addChild(child);
-			}
+			checkedLoadChildren(db);
 		}
 
 		ListAdapter adapter = createAdapter(db);
 		setListAdapter(adapter);
 	}
 
-	List<Child> readChildren() {
-		String json = convertStreamToString(GrowthcurveActivity.class
-				.getResourceAsStream("android-get.json"));
-		List<Child> children = new ArrayList<Child>();
-		try {
-			JSONArray array = new JSONArray(json);
-			for (int i = 0; i < array.length(); i++) {
-				children.add(Child.load(array.getJSONObject(i)));
-			}
-		} catch (JSONException e) {
-			LOG.log(Level.SEVERE, "JSON child information invalid", e);
-		}
-		return children;
-	}
-
-	// FROM http://stackoverflow.com/a/5445161
-	public String convertStreamToString(java.io.InputStream is) {
-		try {
-			return new java.util.Scanner(is).useDelimiter("\\A").next();
-		} catch (java.util.NoSuchElementException e) {
-			return "";
-		}
-	}
-
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
-		// TODO: load the selected child's measurements from the db... (the rest
-		// is already there)
-		Child child = new Child("child1", 1147489200, Gender.male, null);
-		startActivity(new WeightChart().execute(getApplicationContext(), child));
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		MenuItem itemSettings = menu.add(Menu.NONE, ID_MENU_SETTINGS,
+				Menu.NONE, R.string.Settings);
+		itemSettings.setShortcut('5', 's');
+		MenuItem itemReload = menu.add(Menu.NONE, ID_MENU_RELOAD, Menu.NONE,
+				R.string.Reload);
+		itemReload.setShortcut('5', 's');
+		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case ID_MENU_SETTINGS:
-			Intent settingsIntent = new Intent(getApplicationContext(),
-					SettingsActivity.class);
-			startActivityForResult(settingsIntent, 0);
+			startSettings();
+			return true;
+		case ID_MENU_RELOAD:
+			reloadChildren();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		MenuItem item = menu.add(Menu.NONE, ID_MENU_SETTINGS, Menu.NONE,
-				R.string.Settings);
-		item.setShortcut('5', 's');
-		return true;
 	}
 
 	/**
@@ -120,9 +83,85 @@ public class GrowthcurveActivity extends ListActivity {
 		for (Child child : db.getAllChildren()) {
 			names[i++] = child.getName();
 		}
+		// TODO: add DOB to the list to nicen it up
 		ListAdapter adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, names);
 
 		return adapter;
+	}
+
+	private void checkedLoadChildren(DatabaseHandler db) {
+		Settings settings = Settings.INSTANCE(this);
+		if (settings.getUsername() == null
+				|| settings.getUsername().trim().length() == 0) {
+			showMessage("Please goto settings first to setup access");
+			startSettings();
+		} else {
+			loadChildren(db, settings);
+		}
+	}
+
+	private void loadChildren(DatabaseHandler db, Settings settings) {
+		LOG.log(Level.INFO, "Load children...");
+		DataHandler dataHandler = new DataHandler(settings.getBaseUrl(),
+				settings.getUsername(), settings.getPassword());
+		List<Child> children;
+		try {
+			children = readChildren(dataHandler.loadChildren());
+			db.cleanoutChildrenList();
+			for (Child child : children) {
+				db.addChild(child);
+			}
+		} catch (DataNotLoadedException e) {
+			Toast.makeText(this, "Failed to load children: " + e.getMessage(),
+					Toast.LENGTH_SHORT).show();
+			LOG.log(Level.WARNING, "Failed to load children", e);
+		}
+	}
+
+	List<Child> readChildren(String json) {
+		List<Child> children = new ArrayList<Child>();
+		try {
+			JSONArray array = new JSONArray(json);
+			for (int i = 0; i < array.length(); i++) {
+				children.add(Child.load(array.getJSONObject(i)));
+			}
+		} catch (JSONException e) {
+			LOG.log(Level.SEVERE, "JSON child information invalid", e);
+		}
+		return children;
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+		// TODO: load the selected child's measurements from the db... (the rest
+		// is already there)
+		Child child = new Child("child1", 1147489200, Gender.male, null);
+		startActivity(new WeightChart().execute(getApplicationContext(), child));
+	}
+
+	private void reloadChildren() {
+		DatabaseHandler db = new DatabaseHandler(this);
+		checkedLoadChildren(db);
+	}
+
+	private void startSettings() {
+		Intent settingsIntent = new Intent(getApplicationContext(),
+				SettingsActivity.class);
+		startActivityForResult(settingsIntent, 0);
+	}
+
+	private void showMessage(String message) {
+		AlertDialog ad = new AlertDialog.Builder(this).create();
+		ad.setMessage(message);
+		ad.setButton("Ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		// TODO: use ad.setIcon(icon);
+		ad.show();
 	}
 }

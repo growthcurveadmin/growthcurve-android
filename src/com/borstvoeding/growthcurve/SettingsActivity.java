@@ -1,70 +1,77 @@
 package com.borstvoeding.growthcurve;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 
 public class SettingsActivity extends Activity {
-	private static final Logger LOG = Logger.getLogger(SettingsActivity.class
-			.getName());
+	private EditText mBaseUrl;
+	private EditText mUsername;
+	private EditText mPassword;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.settings);
+
+		mBaseUrl = (EditText) findViewById(R.id.etBaseUrl);
+		mUsername = (EditText) findViewById(R.id.etUsername);
+		mPassword = (EditText) findViewById(R.id.etPassword);
+
+		loadSettings();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		storeSettings();
 	}
 
 	public void onClickHandler(View view) {
 		switch (view.getId()) {
-		case R.id.btConnect:
-			DefaultHttpClient client = new DefaultHttpClient();
-			HttpPost httppost = new HttpPost(
-					"http://www.borstvoeding.com/groeicurve-2012-04-10/");
-
-			try {
-				// Add your data
-				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
-						2);
-				nameValuePairs
-						.add(new BasicNameValuePair("edit[name]", "admin"));
-				nameValuePairs.add(new BasicNameValuePair("edit[pass]",
-						"skgk06gc"));
-				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-				// Execute HTTP Post Request
-				HttpResponse response = client.execute(httppost);
-				StatusLine statusLine = response.getStatusLine();
-				LOG.log(Level.INFO,
-						MessageFormat.format("response={0}:{1}",
-								new Object[] { statusLine.getStatusCode(),
-										statusLine.getReasonPhrase() }));
-
-				// TODO: now the client can be used to read the childrens list.
-				// This should then be stored in SQLlive for future use. And
-				// only reload on demand...
-
-			} catch (ClientProtocolException e) {
-				LOG.log(Level.INFO, "Connection failure", e);
-			} catch (IOException e) {
-				LOG.log(Level.INFO, "Read/write failure", e);
-			}
+		case R.id.btCheckAuth:
+			checkAuth();
 			break;
 		}
+	}
+
+	private void checkAuth() {
+		storeSettings();
+		Settings settings = Settings.INSTANCE(this);
+		DataHandler dataHandler = new DataHandler(settings.getBaseUrl(),
+				settings.getUsername(), settings.getPassword());
+		boolean authSucceeds = dataHandler.checkAuth();
+		showAuthStatus(authSucceeds);
+	}
+
+	private void showAuthStatus(boolean authSucceeds) {
+		AlertDialog ad = new AlertDialog.Builder(this).create();
+		ad.setMessage(authSucceeds ? "Authentication ok"
+				: "Authentication failed");
+		ad.setButton("Ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		// TODO: use ad.setIcon(icon);
+		ad.show();
+	}
+
+	private void loadSettings() {
+		Settings settings = Settings.INSTANCE(this);
+		mBaseUrl.setText(settings.getBaseUrl());
+		mUsername.setText(settings.getUsername());
+		mPassword.setText(settings.getPassword());
+	}
+
+	private void storeSettings() {
+		Settings settings = Settings.INSTANCE(this);
+		settings.setBaseUrl(mBaseUrl.getText().toString());
+		settings.setUsername(mUsername.getText().toString());
+		settings.setPassword(mPassword.getText().toString());
 	}
 }

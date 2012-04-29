@@ -35,7 +35,6 @@ public class Child {
 		this.dob = dob;
 		this.gender = gender;
 		this.story = story;
-		initMeasurements();
 	}
 
 	public static Child load(JSONObject jSONObject) {
@@ -58,26 +57,6 @@ public class Child {
 		return "m".equalsIgnoreCase(gender) ? Gender.male : Gender.female;
 	}
 
-	private void initMeasurements() {
-		long length = 0;
-		String story = "";
-		// TODO: add length
-		measurements.add(new Measurement(1, 1147489200, 4450L, length, story));
-		measurements.add(new Measurement(1, 1149044400, 4640L, length, story));
-		measurements.add(new Measurement(1, 1150686000, 5245L, length, story));
-		measurements.add(new Measurement(1, 1153105200, 5795L, length, story));
-		measurements.add(new Measurement(1, 1156129200, 6525L, length, story));
-		measurements.add(new Measurement(1, 1159326000, 7255L, length, story));
-		measurements.add(new Measurement(1, 1165896000, 8220L, length, story));
-		measurements.add(new Measurement(1, 1171339200, 8860L, length, story));
-		measurements.add(new Measurement(1, 1176174000, 9330L, length, story));
-		measurements.add(new Measurement(1, 1182826800, 10390L, length, story));
-		measurements.add(new Measurement(1, 1196136000, 11300L, length, story));
-		measurements.add(new Measurement(1, 1216782000, 13600L, length, story));
-		measurements.add(new Measurement(1, 1226894400, 14000L, length, story));
-		measurements.add(new Measurement(1, 1290830400, 16500L, length, story));
-	}
-
 	private void loadMeasurements(JSONArray array) throws JSONException {
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject obj = array.getJSONObject(i);
@@ -85,14 +64,22 @@ public class Child {
 					obj.getLong("measurement_id"), //
 					obj.getLong("moment"), //
 					getLong(obj, "weight"), //
-					obj.has("length") ? obj.getLong("length") : null, //
+					getLong(obj, "length"), //
 					obj.has("story") ? obj.getString("story") : null);
 			measurements.add(m);
 		}
 	}
 
 	private Long getLong(JSONObject obj, String name) throws JSONException {
-		return obj.has(name) ? obj.getLong(name) : null;
+		if (!obj.has(name)) {
+			return null;
+		}
+		String strValue = obj.getString(name);
+		try {
+			return Long.valueOf(strValue);
+		} catch (NumberFormatException nfe) {
+			return null;
+		}
 	}
 
 	public int getId() {

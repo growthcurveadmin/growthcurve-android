@@ -6,6 +6,8 @@ import java.net.HttpURLConnection;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -15,11 +17,16 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
 public class DataHandler {
+	private final HttpContext HTTP_CONTEXT = new BasicHttpContext();
+
 	private final String baseUrl;
 	private final String username;
 	private final String password;
@@ -33,7 +40,8 @@ public class DataHandler {
 	public boolean checkAuth() {
 		DefaultHttpClient client = new DefaultHttpClient();
 		try {
-			authenticate(client);
+			String token = readToken(client);
+			authenticate(client, token);
 			return true;
 		} catch (ClientProtocolException e) {
 		} catch (IOException e) {
@@ -45,7 +53,8 @@ public class DataHandler {
 	public String loadChildren() throws DataNotLoadedException {
 		DefaultHttpClient client = new DefaultHttpClient();
 		try {
-			List<Cookie> cookies = authenticate(client);
+			String token = readToken(client);
+			List<Cookie> cookies = authenticate(client, token);
 			return getData(client, cookies);
 		} catch (ClientProtocolException e) {
 			throw new DataNotLoadedException("Connection failure", e);
@@ -54,22 +63,55 @@ public class DataHandler {
 		}
 	}
 
-	private List<Cookie> authenticate(DefaultHttpClient client)
-			throws UnsupportedEncodingException, IOException,
+	String readToken(DefaultHttpClient client) throws IOException,
 			DataNotLoadedException {
-		HttpPost httppost = new HttpPost(getBaseUrl());
-		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-		nameValuePairs.add(new BasicNameValuePair("edit[name]", getUsername()));
-		nameValuePairs.add(new BasicNameValuePair("edit[pass]", getPassword()));
-		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-		HttpResponse response = client.execute(httppost);
-
+		HttpGet get = new HttpGet(getBaseUrl() + "user");
+		setHeaders(get);
+		HttpResponse response;
+		response = client.execute(get, HTTP_CONTEXT);
 		StatusLine statusLine = response.getStatusLine();
 		if (statusLine.getStatusCode() >= HttpURLConnection.HTTP_MULT_CHOICE) {
+			throw new DataNotLoadedException("Failed to read the login page:\n"
+					+ formatResponse(statusLine), null);
+		}
+		HttpEntity entity = response.getEntity();
+		String loginPage = convertStreamToString(entity.getContent());
+		// Ugly grep to find token, example:
+		// name="edit[token]" value="b42a7ab40a99678d5c6950b304e23c48"
+		Pattern findToken = Pattern.compile(
+				"name=\\\"edit\\[token\\]\\\"\\s+value=\\\"([^\\\"]+)\\\"",
+				Pattern.CASE_INSENSITIVE);
+		Matcher matcher = findToken.matcher(loginPage);
+		if (!matcher.find()) {
+			return null;
+		}
+		return matcher.group(1);
+	}
+
+	private List<Cookie> authenticate(DefaultHttpClient client, String token)
+			throws UnsupportedEncodingException, IOException,
+			DataNotLoadedException {
+		HttpPost httppost = new HttpPost(getBaseUrl()
+				+ "user/login?destination=node");
+		setHeaders(httppost);
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+		nameValuePairs.add(new BasicNameValuePair("op", "Log in"));
+		nameValuePairs.add(new BasicNameValuePair("edit[name]", getUsername()));
+		nameValuePairs.add(new BasicNameValuePair("edit[pass]", getPassword()));
+		nameValuePairs.add(new BasicNameValuePair("edit[token]", token));
+		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+		HttpResponse response = client.execute(httppost, HTTP_CONTEXT);
+
+		StatusLine statusLine = response.getStatusLine();
+		if (statusLine.getStatusCode() >= HttpURLConnection.HTTP_MULT_CHOICE
+				&& statusLine.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
 			throw new DataNotLoadedException("Authentication faulure:\n"
 					+ formatResponse(statusLine), null);
 		}
+		// read the page???
+		String html = convertStreamToString(response.getEntity().getContent());
+
 		return client.getCookieStore().getCookies();
 	}
 
@@ -77,25 +119,8 @@ public class DataHandler {
 			throws IOException, ClientProtocolException, DataNotLoadedException {
 		HttpGet get = new HttpGet(baseUrl
 				+ "growthcurve?q=growthcurve/android/get/j.json");
-		get.setHeader("Host", "www.borstvoeding.com"); // TODO: read this from
-														// the baseUrl..
-		get.setHeader("User-Agent",
-				"Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:12.0) Gecko/20100101 Firefox/12.0");
-		get.setHeader("Accept",
-				"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-		get.setHeader("Accept-Language", "en-us,en;q=0.5");
-		get.setHeader("Accept-Encoding", "gzip, deflate");
-		get.setHeader("Connection", "keep-alive");
-		// CookieStore cookieStore = new BasicCookieStore();
-		// for (Cookie cookie : cookies) {
-		// cookieStore.addCookie(cookie);
-		// }
-		// client.setCookieStore(cookieStore);
-		get.setHeader(
-				"Cookie",
-				"__utma=70349315.326128394.1266695800.1330979629.1333110626.39; __utmz=70349315.1311933928.25.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); PHPSESSID="
-						+ cookies.get(0).getValue());
-		HttpResponse response = client.execute(get);
+		setHeaders(get);
+		HttpResponse response = client.execute(get, HTTP_CONTEXT);
 		StatusLine statusLine = response.getStatusLine();
 		if (statusLine.getStatusCode() >= HttpURLConnection.HTTP_MULT_CHOICE) {
 			throw new DataNotLoadedException(
@@ -113,6 +138,11 @@ public class DataHandler {
 		} catch (java.util.NoSuchElementException e) {
 			return "";
 		}
+	}
+
+	private void setHeaders(HttpRequestBase request) {
+		request.setHeader("User-Agent",
+				"Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:12.0) Gecko/20100101 Firefox/12.0");
 	}
 
 	private String formatResponse(StatusLine statusLine) {

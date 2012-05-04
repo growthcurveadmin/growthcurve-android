@@ -28,8 +28,8 @@ public class Settings {
 	public void load() {
 		SharedPreferences sharedPreferences = PreferenceManager
 				.getDefaultSharedPreferences(activity.getApplicationContext());
-		baseUrl = sharedPreferences.getString(SETTING_BASE_URL,
-				"http://www.borstvoeding.com/groeicurve-2012-04-10/");
+		setBaseUrl(sharedPreferences.getString(SETTING_BASE_URL,
+				"http://www.borstvoeding.com/groeicurve-2012-04-10/"));
 		username = sharedPreferences.getString(SETTING_USERNAME, "");
 		// TODO: decrypt
 		password = sharedPreferences.getString(SETTING_PASSWORD, "");
@@ -39,7 +39,7 @@ public class Settings {
 		SharedPreferences sharedPreferences = PreferenceManager
 				.getDefaultSharedPreferences(activity.getApplicationContext());
 		SharedPreferences.Editor editor = sharedPreferences.edit();
-		editor.putString(SETTING_BASE_URL, baseUrl);
+		editor.putString(SETTING_BASE_URL, getBaseUrl());
 		editor.putString(SETTING_USERNAME, username);
 		// TODO: encrypt
 		editor.putString(SETTING_PASSWORD, password);
@@ -61,6 +61,9 @@ public class Settings {
 	}
 
 	public void setBaseUrl(String baseUrl) {
+		if (!baseUrl.endsWith("/")) {
+			baseUrl += "/";
+		}
 		this.baseUrl = baseUrl;
 	}
 

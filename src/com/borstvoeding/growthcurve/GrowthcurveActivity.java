@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,11 +20,11 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.borstvoeding.growthcurve.charts.WeightChart;
 import com.borstvoeding.growthcurve.db.Child;
-import com.borstvoeding.growthcurve.db.Child.Gender;
 import com.borstvoeding.growthcurve.db.DatabaseHandler;
 
 public class GrowthcurveActivity extends ListActivity {
@@ -42,7 +43,16 @@ public class GrowthcurveActivity extends ListActivity {
 			checkedLoadChildren(db);
 		}
 
-		ListAdapter adapter = createAdapter(db);
+		reloadList(db);
+	}
+
+	private void reloadList(DatabaseHandler db) {
+		Cursor cursor = db.getCursorOnAllChildren();
+		ListAdapter adapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_list_item_1, cursor, new String[] {
+						DatabaseHandler.KEY_NAME, "dt" }, new int[] {
+						android.R.id.text1, android.R.id.text2 });
+		// ListAdapter adapter = createAdapter(db);
 		setListAdapter(adapter);
 	}
 
@@ -54,7 +64,7 @@ public class GrowthcurveActivity extends ListActivity {
 		itemSettings.setShortcut('5', 's');
 		MenuItem itemReload = menu.add(Menu.NONE, ID_MENU_RELOAD, Menu.NONE,
 				R.string.Reload);
-		itemReload.setShortcut('5', 's');
+		itemReload.setShortcut('7', 'r');
 		return true;
 	}
 
@@ -108,7 +118,7 @@ public class GrowthcurveActivity extends ListActivity {
 		List<Child> children;
 		try {
 			children = readChildren(dataHandler.loadChildren());
-			db.cleanoutChildrenList();
+			db.cleanoutDb();
 			for (Child child : children) {
 				db.addChild(child);
 			}
@@ -135,15 +145,15 @@ public class GrowthcurveActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		// TODO: load the selected child's measurements from the db... (the rest
-		// is already there)
-		Child child = new Child("child1", 1147489200, Gender.male, null);
+		DatabaseHandler db = new DatabaseHandler(getApplicationContext());
+		Child child = db.getChild((int) id);
 		startActivity(new WeightChart().execute(getApplicationContext(), child));
 	}
 
 	private void reloadChildren() {
 		DatabaseHandler db = new DatabaseHandler(this);
 		checkedLoadChildren(db);
+		reloadList(db);
 	}
 
 	private void startSettings() {

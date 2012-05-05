@@ -12,19 +12,32 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.borstvoeding.growthcurve.db.Child.Gender;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 5;
 	private static final String DATABASE_NAME = "growthcurve";
 
 	private static final String TABLE_CHILDREN = "children";
-	// Contacts Table Columns names
-	private static final String KEY_ID = "id";
-	private static final String KEY_NAME = "name";
+	// Children Table Columns names
+	private static final String KEY_ID = "_id";
+	public static final String KEY_NAME = "name";
 	private static final String KEY_DOB = "dob";
 	private static final String KEY_GENDER = "gender";
 	private static final String KEY_STORY = "story";
 
+	private static final String TABLE_MEASUREMENTS = "measurements";
+	// Measurements Table Columns names
+	private static final String KEY_M_ID = "_id";
+	private static final String KEY_M_CHILD_ID = "child_id";
+	private static final String KEY_M_MOMENT = "moment";
+	private static final String KEY_M_WEIGHT = "weight";
+	private static final String KEY_M_LENGTH = "length";
+	private static final String KEY_M_STORY = "story";
+
 	public DatabaseHandler(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+	}
+
+	DatabaseHandler(Context context, String dbName) {
+		super(context, dbName, null, DATABASE_VERSION);
 	}
 
 	@Override
@@ -37,18 +50,31 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 				+ KEY_STORY + " TEXT" //
 				+ ")";
 		db.execSQL(createChildrenTable);
+
+		String createMeasurementsTable = "CREATE TABLE " + TABLE_MEASUREMENTS
+				+ "(" + KEY_M_ID + " INTEGER," //
+				+ KEY_M_CHILD_ID + " INTEGER," //
+				+ KEY_M_MOMENT + " INTEGER," //
+				+ KEY_M_WEIGHT + " INTEGER," //
+				+ KEY_M_LENGTH + " INTEGER," //
+				+ KEY_M_STORY + " TEXT," //
+				+ "PRIMARY KEY (" + KEY_M_ID + ", " + KEY_M_CHILD_ID + ")" //
+				+ ")";
+		db.execSQL(createMeasurementsTable);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		db.execSQL("DROP TABLE IF EXISTS " + TABLE_CHILDREN);
+		db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEASUREMENTS);
 
 		onCreate(db);
 	}
 
-	public void cleanoutChildrenList() {
+	public void cleanoutDb() {
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.execSQL("DELETE FROM " + TABLE_CHILDREN);
+		db.execSQL("DELETE FROM " + TABLE_MEASUREMENTS);
 		db.close();
 	}
 
@@ -56,13 +82,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getWritableDatabase();
 
 		ContentValues values = new ContentValues();
+		values.put(KEY_ID, child.getId());
 		values.put(KEY_NAME, child.getName());
 		values.put(KEY_DOB, child.getDob());
 		values.put(KEY_GENDER, child.getGender().name());
 		values.put(KEY_STORY, child.getStory());
-
-		// Inserting Row
 		db.insert(TABLE_CHILDREN, null, values);
+
+		for (Measurement measurement : child.getMeasurements()) {
+			ContentValues measurementValues = new ContentValues();
+			measurementValues.put(KEY_M_ID, measurement.getId());
+			measurementValues.put(KEY_M_CHILD_ID, child.getId());
+			measurementValues.put(KEY_M_MOMENT, measurement.getMoment());
+			measurementValues.put(KEY_M_WEIGHT, measurement.getWeight());
+			measurementValues.put(KEY_M_LENGTH, measurement.getLength());
+			measurementValues.put(KEY_M_STORY, measurement.getStory());
+			db.insert(TABLE_MEASUREMENTS, null, measurementValues);
+		}
 		db.close(); // Closing database connection
 	}
 
@@ -82,6 +118,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 			cursor.moveToFirst();
 			Child child = readChild(cursor);
+			readMeasurements(db, child);
 			return child;
 		} finally {
 			safeClose(cursor);
@@ -96,12 +133,51 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return child;
 	}
 
+	private void readMeasurements(SQLiteDatabase db, Child child) {
+		Cursor cursor = null;
+		try {
+			cursor = db.query(TABLE_MEASUREMENTS, new String[] { KEY_M_ID,
+					KEY_M_MOMENT, KEY_M_WEIGHT, KEY_M_LENGTH, KEY_M_STORY },
+					KEY_M_CHILD_ID + "=?",
+					new String[] { String.valueOf(child.getId()) }, null, null,
+					null, null);
+			if (cursor == null) {
+				return;
+			}
+
+			cursor.moveToFirst();
+			if (cursor.moveToFirst()) {
+				do {
+					Measurement measurement = readMeasurement(cursor);
+					child.getMeasurements().add(measurement);
+				} while (cursor.moveToNext());
+			}
+		} finally {
+			safeClose(cursor);
+			db.close();
+		}
+	}
+
+	private Measurement readMeasurement(Cursor cursor) {
+		Measurement measurement = new Measurement(cursor.getLong(0),
+				cursor.getLong(1), getNullOrLong(cursor, 2), getNullOrLong(
+						cursor, 3), cursor.getString(4));
+		return measurement;
+	}
+
+	private Long getNullOrLong(Cursor cursor, int columnIndex) {
+		if (cursor.isNull(columnIndex)) {
+			return null;
+		}
+		return cursor.getLong(columnIndex);
+	}
+
 	public List<Child> getAllChildren() {
 		List<Child> childrensList = new ArrayList<Child>();
 
 		String selectQuery = "SELECT * FROM " + TABLE_CHILDREN;
 
-		SQLiteDatabase db = this.getWritableDatabase();
+		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor cursor = null;
 		try {
 			cursor = db.rawQuery(selectQuery, null);
@@ -137,5 +213,16 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		if (cursor != null) {
 			cursor.close();
 		}
+	}
+
+	public Cursor getCursorOnAllChildren() {
+		SQLiteDatabase db = this.getReadableDatabase();
+		return db.rawQuery("SELECT " + KEY_ID + ", " + KEY_NAME
+				+ ", strftime('%m/%d/%Y', " + KEY_DOB + ", 11) AS dt FROM "
+				+ TABLE_CHILDREN, null);
+
+		// String orderBy = KEY_NAME;
+		// return db.query(TABLE_CHILDREN, new String[] { KEY_ID, KEY_NAME,
+		// KEY_DOB }, null, null, null, null, orderBy);
 	}
 }

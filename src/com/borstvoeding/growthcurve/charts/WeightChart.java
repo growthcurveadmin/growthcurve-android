@@ -1,5 +1,6 @@
 package com.borstvoeding.growthcurve.charts;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 
 import com.borstvoeding.growthcurve.db.Child;
 import com.borstvoeding.growthcurve.db.Measurement;
@@ -22,6 +24,7 @@ import com.borstvoeding.growthcurve.ref.Moments;
 
 public class WeightChart {
 	private static final int COLOR_IN_RANGE = Color.rgb(193, 255, 193);
+	private static final int SECONDS_PER_WEEK = 604800;
 	private static final int SECONDS_PER_MONTH_AVG = 2628000;
 
 	public Intent execute(Context context, Child child) {
@@ -33,24 +36,18 @@ public class WeightChart {
 		values.add(BoyWeight.ref1);
 		values.add(BoyWeight.ref2);
 
-		int[] lineColors = new int[] { Color.BLACK, Color.BLACK, Color.BLACK,
-				Color.BLACK, Color.BLACK, Color.RED };
-		int[] colorsBelow = new int[] { Color.WHITE, COLOR_IN_RANGE,
-				COLOR_IN_RANGE, Color.WHITE, Color.WHITE };
-		PointStyle[] styles = new PointStyle[] { PointStyle.POINT,
-				PointStyle.POINT, PointStyle.POINT, PointStyle.POINT,
-				PointStyle.POINT, PointStyle.CIRCLE };
-		XYMultipleSeriesRenderer renderer = buildRenderer(lineColors, styles);
+		XYMultipleSeriesRenderer renderer = buildRenderer();
 		// TODO: determine weeks to plot based on the age of the child
-		int weeksToPlot = 52;
+		int weeksToPlot = getAgeInWeeks(child);
 		setChartSettings(renderer, //
 				"Weight", //
 				"months", //
 				"grams", //
 				// TODO: determine the max-month on the age of the child
-				0, 13, //
+				0, getAgeInMonths(child) + 1, //
 				// TODO: determine the max-range on the ref-curve-end-values
-				1800, 14000, //
+				roundDown(getLowestWeight(child)), // min weight in range
+				roundUp(getHighestWeight(child)), // max weight in range
 				Color.GRAY, Color.LTGRAY);
 		renderer.setXLabels(12);
 		renderer.setYLabels(10);
@@ -65,34 +62,86 @@ public class WeightChart {
 		renderer.setZoomButtonsVisible(true);
 		renderer.setZoomEnabled(true, true);
 
-		int length = renderer.getSeriesRendererCount();
-		for (int i = 0; i < length; i++) {
-			XYSeriesRenderer seriesRenderer = (XYSeriesRenderer) renderer
-					.getSeriesRendererAt(i);
-			if (i < length - 1) {
-				seriesRenderer.setFillBelowLine(true);
-				seriesRenderer.setFillBelowLineColor(colorsBelow[i]);
-				seriesRenderer.setLineWidth(2.5f);
-				seriesRenderer.setDisplayChartValues(false);
-			} else {
-				seriesRenderer.setFillBelowLine(false);
-				seriesRenderer.setLineWidth(3.5f);
-				seriesRenderer.setDisplayChartValues(true);
-				seriesRenderer.setChartValuesTextSize(10f);
+		addRefLineSeriesRenderers(renderer);
+		XYMultipleSeriesDataset dataset = buildRefDataset(titles, values,
+				weeksToPlot);
+
+		addChildCurve(renderer, dataset, child, Color.RED);
+
+		return ChartFactory.getLineChartIntent(context, dataset, renderer);
+	}
+
+	private double roundDown(long lowestWeight) {
+		return ((long) Math.floor(lowestWeight / 100)) * 100;
+	}
+
+	private double roundUp(long highestWeight) {
+		return ((long) Math.ceil(highestWeight / 100)) * 100;
+	}
+
+	private long getLowestWeight(Child child) {
+		long minWeight = Long.MAX_VALUE;
+		for (Measurement measurement : child.getMeasurements()) {
+			if (measurement.getWeight() != null
+					&& measurement.getWeight().longValue() < minWeight) {
+				minWeight = measurement.getWeight().longValue();
 			}
 		}
-		XYMultipleSeriesDataset refDataset = buildRefDataset(titles, values,
-				weeksToPlot);
-		XYSeries series = new XYSeries("Child 1");
+		return minWeight == Long.MAX_VALUE ? 1800 : minWeight;
+	}
+
+	private long getHighestWeight(Child child) {
+		long maxWeight = Long.MIN_VALUE;
+		for (Measurement measurement : child.getMeasurements()) {
+			if (measurement.getWeight() != null
+					&& measurement.getWeight().longValue() > maxWeight) {
+				maxWeight = measurement.getWeight().longValue();
+			}
+		}
+		return maxWeight == Long.MAX_VALUE ? 14000 : maxWeight;
+	}
+
+	private void addChildCurve(XYMultipleSeriesRenderer renderer,
+			XYMultipleSeriesDataset dataset, Child child, int color) {
+		addChildSeriesRenderer(renderer, color);
+
+		XYSeries series = new XYSeries(child.getName());
 		for (Measurement measurement : child.getMeasurements()) {
 			long moment = measurement.getMoment() - child.getDob();
-			if (moment > Moments.refMoments[weeksToPlot]) {
-				break;
-			}
+			Log.i("gc-wc",
+					MessageFormat.format("{0} - {1}: {2} => {3}", new Object[] {
+							measurement.getMoment(), child.getDob(), moment,
+							measurement.getWeight() }));
 			series.add(moment / SECONDS_PER_MONTH_AVG, measurement.getWeight());
 		}
-		refDataset.addSeries(series);
-		return ChartFactory.getLineChartIntent(context, refDataset, renderer);
+		dataset.addSeries(series);
+	}
+
+	private void addChildSeriesRenderer(XYMultipleSeriesRenderer renderer,
+			int color) {
+		XYSeriesRenderer r = new XYSeriesRenderer();
+		r.setColor(color);
+		r.setPointStyle(PointStyle.CIRCLE);
+		r.setFillBelowLine(false);
+		r.setLineWidth(3.5f);
+		r.setDisplayChartValues(true);
+		r.setChartValuesTextSize(10f);
+
+		renderer.addSeriesRenderer(r);
+	}
+
+	private int getAgeInWeeks(Child child) {
+		long ageInSeconds = child.getMeasurements()
+				.get(child.getMeasurements().size() - 1).getMoment()
+				- child.getDob();
+		return (int) Math.ceil(ageInSeconds / SECONDS_PER_WEEK);
+	}
+
+	private double getAgeInMonths(Child child) {
+		long ageInSeconds = child.getMeasurements()
+				.get(child.getMeasurements().size() - 1).getMoment()
+				- child.getDob();
+		return (int) Math.ceil(ageInSeconds / SECONDS_PER_MONTH_AVG);
 	}
 
 	/**
@@ -163,32 +212,38 @@ public class WeightChart {
 	/**
 	 * Builds an XY multiple series renderer.
 	 * 
-	 * @param colors
-	 *            the series rendering colors
-	 * @param styles
-	 *            the series point styles
 	 * @return the XY multiple series renderers
 	 */
-	protected XYMultipleSeriesRenderer buildRenderer(int[] colors,
-			PointStyle[] styles) {
+	protected XYMultipleSeriesRenderer buildRenderer() {
 		XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
-		setRenderer(renderer, colors, styles);
-		return renderer;
-	}
-
-	protected void setRenderer(XYMultipleSeriesRenderer renderer, int[] colors,
-			PointStyle[] styles) {
 		renderer.setAxisTitleTextSize(16);
 		renderer.setChartTitleTextSize(20);
 		renderer.setLabelsTextSize(15);
 		renderer.setLegendTextSize(15);
 		renderer.setPointSize(5f);
 		renderer.setMargins(new int[] { 20, 30, 15, 20 });
-		int length = colors.length;
+		return renderer;
+	}
+
+	private void addRefLineSeriesRenderers(XYMultipleSeriesRenderer renderer) {
+		int[] lineColors = new int[] { Color.BLACK, Color.BLACK, Color.BLACK,
+				Color.BLACK, Color.BLACK };
+		int[] colorsBelow = new int[] { Color.WHITE, COLOR_IN_RANGE,
+				COLOR_IN_RANGE, Color.WHITE, Color.BLACK };
+		PointStyle[] styles = new PointStyle[] { PointStyle.POINT,
+				PointStyle.POINT, PointStyle.POINT, PointStyle.POINT,
+				PointStyle.POINT };
+
+		int length = lineColors.length;
 		for (int i = 0; i < length; i++) {
 			XYSeriesRenderer r = new XYSeriesRenderer();
-			r.setColor(colors[i]);
+			r.setColor(lineColors[i]);
 			r.setPointStyle(styles[i]);
+			r.setFillBelowLine(true);
+			r.setFillBelowLineColor(colorsBelow[i]);
+			r.setLineWidth(2.5f);
+			r.setDisplayChartValues(false);
+
 			renderer.addSeriesRenderer(r);
 		}
 	}

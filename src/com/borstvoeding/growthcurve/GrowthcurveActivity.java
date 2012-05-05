@@ -49,9 +49,9 @@ public class GrowthcurveActivity extends ListActivity {
 	private void reloadList(DatabaseHandler db) {
 		Cursor cursor = db.getCursorOnAllChildren();
 		ListAdapter adapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_list_item_1, cursor, new String[] {
-						DatabaseHandler.KEY_NAME, "dt" }, new int[] {
-						android.R.id.text1, android.R.id.text2 });
+				android.R.layout.simple_list_item_1, cursor, //
+				new String[] { DatabaseHandler.KEY_NAME, "dt" }, //
+				new int[] { android.R.id.text1, android.R.id.text2 });
 		// ListAdapter adapter = createAdapter(db);
 		setListAdapter(adapter);
 	}

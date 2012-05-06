@@ -75,7 +75,7 @@ public class DataHandler {
 					+ formatResponse(statusLine), null);
 		}
 		HttpEntity entity = response.getEntity();
-		String loginPage = convertStreamToString(entity.getContent());
+		String loginPage = JsonUtils.convertStreamToString(entity.getContent());
 		// Ugly grep to find token, example:
 		// name="edit[token]" value="b42a7ab40a99678d5c6950b304e23c48"
 		Pattern findToken = Pattern.compile(
@@ -110,7 +110,8 @@ public class DataHandler {
 					+ formatResponse(statusLine), null);
 		}
 		// read the page???
-		String html = convertStreamToString(response.getEntity().getContent());
+		String html = JsonUtils.convertStreamToString(response.getEntity()
+				.getContent());
 
 		return client.getCookieStore().getCookies();
 	}
@@ -128,16 +129,7 @@ public class DataHandler {
 							+ formatResponse(statusLine), null);
 		}
 		HttpEntity entity = response.getEntity();
-		return convertStreamToString(entity.getContent());
-	}
-
-	// FROM http://stackoverflow.com/a/5445161
-	public String convertStreamToString(java.io.InputStream is) {
-		try {
-			return new java.util.Scanner(is).useDelimiter("\\A").next();
-		} catch (java.util.NoSuchElementException e) {
-			return "";
-		}
+		return JsonUtils.convertStreamToString(entity.getContent());
 	}
 
 	private void setHeaders(HttpRequestBase request) {

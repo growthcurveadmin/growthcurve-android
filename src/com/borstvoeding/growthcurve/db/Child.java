@@ -60,25 +60,7 @@ public class Child {
 	private void loadMeasurements(JSONArray array) throws JSONException {
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject obj = array.getJSONObject(i);
-			Measurement m = new Measurement(//
-					obj.getLong("measurement_id"), //
-					obj.getLong("moment"), //
-					getLong(obj, "weight"), //
-					getLong(obj, "length"), //
-					obj.has("story") ? obj.getString("story") : null);
-			measurements.add(m);
-		}
-	}
-
-	private Long getLong(JSONObject obj, String name) throws JSONException {
-		if (!obj.has(name)) {
-			return null;
-		}
-		String strValue = obj.getString(name);
-		try {
-			return Long.valueOf(strValue);
-		} catch (NumberFormatException nfe) {
-			return null;
+			measurements.add(Measurement.load(obj));
 		}
 	}
 

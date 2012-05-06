@@ -1,5 +1,10 @@
 package com.borstvoeding.growthcurve.db;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.borstvoeding.growthcurve.JsonUtils;
+
 public class Measurement {
 	private final long id;
 	private final long moment;
@@ -14,6 +19,16 @@ public class Measurement {
 		this.weight = weight;
 		this.length = length;
 		this.story = story;
+	}
+
+	public static Measurement load(JSONObject json) throws JSONException {
+		Measurement m = new Measurement(//
+				json.getLong("measurement_id"), //
+				json.getLong("moment"), //
+				JsonUtils.getLong(json, "weight"), //
+				JsonUtils.getLong(json, "length"), //
+				json.has("story") ? json.getString("story") : null);
+		return m;
 	}
 
 	public long getId() {

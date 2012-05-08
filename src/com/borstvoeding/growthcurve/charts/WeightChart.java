@@ -1,7 +1,5 @@
 package com.borstvoeding.growthcurve.charts;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.achartengine.ChartFactory;
@@ -15,11 +13,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
 
 import com.borstvoeding.growthcurve.db.Child;
+import com.borstvoeding.growthcurve.db.Child.Gender;
 import com.borstvoeding.growthcurve.db.Measurement;
 import com.borstvoeding.growthcurve.ref.BoyWeight;
+import com.borstvoeding.growthcurve.ref.GirlWeight;
 import com.borstvoeding.growthcurve.ref.Moments;
 
 public class WeightChart {
@@ -29,21 +28,14 @@ public class WeightChart {
 
 	public Intent execute(Context context, Child child) {
 		String[] titles = new String[] { "2+", "1+", "0", "1-", "2-" };
-		List<double[]> values = new ArrayList<double[]>();
-		values.add(BoyWeight.refM2);
-		values.add(BoyWeight.refM1);
-		values.add(BoyWeight.ref0);
-		values.add(BoyWeight.ref1);
-		values.add(BoyWeight.ref2);
 
 		XYMultipleSeriesRenderer renderer = buildRenderer();
-		// TODO: determine weeks to plot based on the age of the child
 		int weeksToPlot = getAgeInWeeks(child);
+		// TODO: det. range according to the ref-graph, not the child's weight
 		setChartSettings(renderer, //
 				"Weight", //
 				"months", //
 				"grams", //
-				// TODO: determine the max-month on the age of the child
 				0, getAgeInMonths(child) + 1, //
 				// TODO: determine the max-range on the ref-curve-end-values
 				roundDown(getLowestWeight(child)), // min weight in range
@@ -63,7 +55,9 @@ public class WeightChart {
 		renderer.setZoomEnabled(true, true);
 
 		addRefLineSeriesRenderers(renderer);
-		XYMultipleSeriesDataset dataset = buildRefDataset(titles, values,
+		List<double[]> refValues = child.getGender() == Gender.male ? BoyWeight.values
+				: GirlWeight.values;
+		XYMultipleSeriesDataset dataset = buildRefDataset(titles, refValues,
 				weeksToPlot);
 
 		addChildCurve(renderer, dataset, child, Color.RED);
@@ -108,10 +102,6 @@ public class WeightChart {
 		XYSeries series = new XYSeries(child.getName());
 		for (Measurement measurement : child.getMeasurements()) {
 			long moment = measurement.getMoment() - child.getDob();
-			Log.i("gc-wc",
-					MessageFormat.format("{0} - {1}: {2} => {3}", new Object[] {
-							measurement.getMoment(), child.getDob(), moment,
-							measurement.getWeight() }));
 			series.add(moment / SECONDS_PER_MONTH_AVG, measurement.getWeight());
 		}
 		dataset.addSeries(series);

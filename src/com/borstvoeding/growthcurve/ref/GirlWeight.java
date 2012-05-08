@@ -3,13 +3,13 @@ package com.borstvoeding.growthcurve.ref;
 import java.util.Arrays;
 import java.util.List;
 
-public class BoyWeight {
+public class GirlWeight {
 	public static final List<double[]> values = Arrays.asList(//
-			BoyWeight.refM2, //
-			BoyWeight.refM1, //
-			BoyWeight.ref0, //
-			BoyWeight.ref1, //
-			BoyWeight.ref2);
+			GirlWeight.refM2, //
+			GirlWeight.refM1, //
+			GirlWeight.ref0, //
+			GirlWeight.ref1, //
+			GirlWeight.ref2);
 
 	static final double[] refM2 = new double[] { 5010.4, 5270.8, 5645.8,
 			6083.3, 6500.0, 6906.3, 7260.4, 7593.8, 7895.8, 8166.7, 8427.1,

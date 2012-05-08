@@ -23,7 +23,6 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
-import com.borstvoeding.growthcurve.charts.WeightChart;
 import com.borstvoeding.growthcurve.db.Child;
 import com.borstvoeding.growthcurve.db.DatabaseHandler;
 
@@ -147,7 +146,10 @@ public class GrowthcurveActivity extends ListActivity {
 		super.onListItemClick(l, v, position, id);
 		DatabaseHandler db = new DatabaseHandler(getApplicationContext());
 		Child child = db.getChild((int) id);
-		startActivity(new WeightChart().execute(getApplicationContext(), child));
+		Intent chartIntent = new Intent(getApplicationContext(),
+				ChartActivity.class);
+		chartIntent.putExtra("child", child);
+		startActivityForResult(chartIntent, 1);
 	}
 
 	private void reloadChildren() {

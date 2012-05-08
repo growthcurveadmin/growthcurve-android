@@ -3,6 +3,7 @@ package com.borstvoeding.growthcurve.charts;
 import java.util.List;
 
 import org.achartengine.ChartFactory;
+import org.achartengine.GraphicalView;
 import org.achartengine.chart.PointStyle;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
@@ -22,15 +23,33 @@ import com.borstvoeding.growthcurve.ref.GirlWeight;
 import com.borstvoeding.growthcurve.ref.Moments;
 
 public class WeightChart {
+	private static final String[] titles = new String[] { "2+", "1+", "0",
+			"1-", "2-" };
 	private static final int COLOR_IN_RANGE = Color.rgb(193, 255, 193);
 	private static final int SECONDS_PER_WEEK = 604800;
 	private static final int SECONDS_PER_MONTH_AVG = 2628000;
 
-	public Intent execute(Context context, Child child) {
-		String[] titles = new String[] { "2+", "1+", "0", "1-", "2-" };
+	private XYMultipleSeriesDataset dataset;
+	private XYMultipleSeriesRenderer renderer;
+	private final Child child;
 
-		XYMultipleSeriesRenderer renderer = buildRenderer();
+	public WeightChart(Child child) {
+		this.child = child;
+	}
+
+	public Intent createIntent(Context context) {
+		setupData();
+		return ChartFactory.getLineChartIntent(context, dataset, renderer);
+	}
+
+	public GraphicalView createView(Context context) {
+		setupData();
+		return ChartFactory.getLineChartView(context, dataset, renderer);
+	}
+
+	private void setupData() {
 		int weeksToPlot = getAgeInWeeks(child);
+		renderer = buildRenderer();
 		// TODO: det. range according to the ref-graph, not the child's weight
 		setChartSettings(renderer, //
 				"Weight", //
@@ -57,12 +76,9 @@ public class WeightChart {
 		addRefLineSeriesRenderers(renderer);
 		List<double[]> refValues = child.getGender() == Gender.male ? BoyWeight.values
 				: GirlWeight.values;
-		XYMultipleSeriesDataset dataset = buildRefDataset(titles, refValues,
-				weeksToPlot);
+		dataset = buildRefDataset(refValues, weeksToPlot);
 
 		addChildCurve(renderer, dataset, child, Color.RED);
-
-		return ChartFactory.getLineChartIntent(context, dataset, renderer);
 	}
 
 	private double roundDown(long lowestWeight) {
@@ -174,7 +190,7 @@ public class WeightChart {
 	}
 
 	/**
-	 * Builds a bar multiple series dataset using the provided values.
+	 * Builds a multiple series dataset using the provided values.
 	 * 
 	 * @param titles
 	 *            the series titles
@@ -182,8 +198,8 @@ public class WeightChart {
 	 *            the values
 	 * @return the XY multiple bar dataset
 	 */
-	protected XYMultipleSeriesDataset buildRefDataset(String[] titles,
-			List<double[]> values, int nrOfSamplesToUse) {
+	protected XYMultipleSeriesDataset buildRefDataset(List<double[]> values,
+			int nrOfSamplesToUse) {
 		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
 		int length = titles.length;
 		for (int i = 0; i < length; i++) {

@@ -4,13 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class BoyWeight {
-	public static final List<double[]> values = Arrays.asList(//
-			BoyWeight.refM2, //
-			BoyWeight.refM1, //
-			BoyWeight.ref0, //
-			BoyWeight.ref1, //
-			BoyWeight.ref2);
-
 	static final double[] refM2 = new double[] { 5010.4, 5270.8, 5645.8,
 			6083.3, 6500.0, 6906.3, 7260.4, 7593.8, 7895.8, 8166.7, 8427.1,
 			8666.7, 8885.4, 9093.8, 9291.7, 9479.2, 9656.3, 9833.3, 9989.6,
@@ -187,4 +180,11 @@ public class BoyWeight {
 			12010.4, 12031.3, 12062.5, 12083.3, 12104.2, 12125.0, 12145.8,
 			12166.7, 12197.9, 12218.8, 12239.6, 12260.4, 12281.3, 12302.1,
 			12322.9, 12343.8, 12343.8 };
+
+	public static final List<double[]> values = Arrays.asList(//
+			BoyWeight.refM2, //
+			BoyWeight.refM1, //
+			BoyWeight.ref0, //
+			BoyWeight.ref1, //
+			BoyWeight.ref2);
 }

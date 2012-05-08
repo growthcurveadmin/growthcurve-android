@@ -1,5 +1,6 @@
 package com.borstvoeding.growthcurve.db;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +11,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Child {
+public class Child implements Serializable {
 	private static final Logger LOG = Logger.getLogger(Child.class.getName());
+
+	private static final long serialVersionUID = 1L;
 
 	public enum Gender {
 		male, female

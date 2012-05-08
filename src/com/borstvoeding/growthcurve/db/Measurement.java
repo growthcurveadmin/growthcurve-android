@@ -1,11 +1,15 @@
 package com.borstvoeding.growthcurve.db;
 
+import java.io.Serializable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.borstvoeding.growthcurve.JsonUtils;
 
-public class Measurement {
+public class Measurement implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private final long id;
 	private final long moment;
 	private final Long weight;

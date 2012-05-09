@@ -8,5 +8,12 @@
     <string name="the_username_on_growthcurve_on_line">The username on Growthcurve-on-line</string>
     <string name="Settings">Settings</string>
     <string name="Reload">Reload</string>
-    <string name="Other">Other</string>
+    <string name="btTextLength">Length</string>
+    <string name="btTextWeight">Weight</string>
+    <string name="chartWeightTitle">Weight</string>
+    <string name="chartWeightYTitle">grams</string>
+    <string name="chartLengthTitle">Length</string>
+    <string name="chartLengthYTitle">cm</string>
+    <string name="weeks">weeks</string>
+    <string name="months">months</string>
 </resources>

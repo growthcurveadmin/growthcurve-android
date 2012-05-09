@@ -7,7 +7,7 @@ import android.content.Context;
 
 import com.borstvoeding.growthcurve.R;
 
-public class BoyWeight implements Reference {
+public class GirlLength implements Reference {
 	private static final double[] refM2 = new double[] { 5010.4, 5270.8,
 			5645.8, 6083.3, 6500.0, 6906.3, 7260.4, 7593.8, 7895.8, 8166.7,
 			8427.1, 8666.7, 8885.4, 9093.8, 9291.7, 9479.2, 9656.3, 9833.3,
@@ -187,26 +187,26 @@ public class BoyWeight implements Reference {
 			12302.1, 12322.9, 12343.8, 12343.8 };
 
 	private static final List<double[]> values = Arrays.asList(//
-			BoyWeight.refM2, //
-			BoyWeight.refM1, //
-			BoyWeight.ref0, //
-			BoyWeight.ref1, //
-			BoyWeight.ref2);
+			GirlLength.refM2, //
+			GirlLength.refM1, //
+			GirlLength.ref0, //
+			GirlLength.ref1, //
+			GirlLength.ref2);
 
 	private final Context context;
 
-	public BoyWeight(Context context) {
+	public GirlLength(Context context) {
 		this.context = context;
 	}
 
 	@Override
 	public String getChartTitle() {
-		return context.getString(R.string.chartWeightTitle);
+		return context.getString(R.string.chartLengthTitle);
 	}
 
 	@Override
 	public String getChartYTitle() {
-		return context.getString(R.string.chartWeightYTitle);
+		return context.getString(R.string.chartLengthYTitle);
 	}
 
 	@Override

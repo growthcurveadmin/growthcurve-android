@@ -15,14 +15,18 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 
+import com.borstvoeding.growthcurve.R;
 import com.borstvoeding.growthcurve.db.Child;
 import com.borstvoeding.growthcurve.db.Child.Gender;
 import com.borstvoeding.growthcurve.db.Measurement;
+import com.borstvoeding.growthcurve.ref.BoyLength;
 import com.borstvoeding.growthcurve.ref.BoyWeight;
+import com.borstvoeding.growthcurve.ref.GirlLength;
 import com.borstvoeding.growthcurve.ref.GirlWeight;
 import com.borstvoeding.growthcurve.ref.Moments;
+import com.borstvoeding.growthcurve.ref.Reference;
 
-public class WeightChart {
+public class Chart {
 	private static final String[] titles = new String[] { "2+", "1+", "0",
 			"1-", "2-" };
 	private static final int COLOR_IN_RANGE = Color.rgb(193, 255, 193);
@@ -31,35 +35,36 @@ public class WeightChart {
 
 	private XYMultipleSeriesDataset dataset;
 	private XYMultipleSeriesRenderer renderer;
+	private final Context context;
 	private final Child child;
+	private final ChartType chartType;
 
-	public WeightChart(Child child) {
+	public Chart(Context context, Child child, ChartType chartType) {
+		this.context = context;
 		this.child = child;
+		this.chartType = chartType;
 	}
 
-	public Intent createIntent(Context context) {
+	public Intent createIntent() {
 		setupData();
 		return ChartFactory.getLineChartIntent(context, dataset, renderer);
 	}
 
-	public GraphicalView createView(Context context) {
+	public GraphicalView createView() {
 		setupData();
 		return ChartFactory.getLineChartView(context, dataset, renderer);
 	}
 
 	private void setupData() {
-		int weeksToPlot = getAgeInWeeks(child);
-		renderer = buildRenderer();
-		// TODO: det. range according to the ref-graph, not the child's weight
-		setChartSettings(renderer, //
-				"Weight", //
-				"months", //
-				"grams", //
-				0, getAgeInMonths(child) + 1, //
-				// TODO: determine the max-range on the ref-curve-end-values
-				roundDown(getLowestWeight(child)), // min weight in range
-				roundUp(getHighestWeight(child)), // max weight in range
-				Color.GRAY, Color.LTGRAY);
+		renderer = new XYMultipleSeriesRenderer();
+		renderer.setAxisTitleTextSize(16);
+		renderer.setChartTitleTextSize(20);
+		renderer.setLabelsTextSize(15);
+		renderer.setLegendTextSize(15);
+		renderer.setPointSize(5f);
+		renderer.setMargins(new int[] { 20, 30, 15, 20 });
+		renderer.setAxesColor(Color.GRAY);
+		renderer.setLabelsColor(Color.LTGRAY);
 		renderer.setXLabels(12);
 		renderer.setYLabels(10);
 		renderer.setChartTitleTextSize(20);
@@ -73,42 +78,73 @@ public class WeightChart {
 		renderer.setZoomButtonsVisible(true);
 		renderer.setZoomEnabled(true, true);
 
+		Reference ref = getReference();
+		// See which chart we should create
+		renderer.setChartTitle(ref.getChartTitle());
+		renderer.setYTitle(ref.getChartYTitle());
+
+		// TODO: det. range according to the ref-graph,
+		// not the child's weight/length
+		renderer.setXAxisMin(0);
+		renderer.setXAxisMax(getAgeInMonths(child) + 1);
+		renderer.setYAxisMin(roundDown(getLowestMeasurement(child)));
+		renderer.setYAxisMax(roundUp(getHighestMeasurement(child)));
+		renderer.setXTitle(context.getString(R.string.months));
+
 		addRefLineSeriesRenderers(renderer);
-		List<double[]> refValues = child.getGender() == Gender.male ? BoyWeight.values
-				: GirlWeight.values;
-		dataset = buildRefDataset(refValues, weeksToPlot);
+
+		int weeksToPlot = getAgeInWeeks(child);
+		dataset = buildRefDataset(ref.getValues(), weeksToPlot);
 
 		addChildCurve(renderer, dataset, child, Color.RED);
 	}
 
-	private double roundDown(long lowestWeight) {
-		return ((long) Math.floor(lowestWeight / 100)) * 100;
-	}
-
-	private double roundUp(long highestWeight) {
-		return ((long) Math.ceil(highestWeight / 100)) * 100;
-	}
-
-	private long getLowestWeight(Child child) {
-		long minWeight = Long.MAX_VALUE;
-		for (Measurement measurement : child.getMeasurements()) {
-			if (measurement.getWeight() != null
-					&& measurement.getWeight().longValue() < minWeight) {
-				minWeight = measurement.getWeight().longValue();
+	private Reference getReference() {
+		Reference ref;
+		if (child.getGender() == Gender.male) {
+			if (chartType == ChartType.weight) {
+				ref = new BoyWeight(context);
+			} else {
+				ref = new BoyLength(context);
+			}
+		} else {
+			if (chartType == ChartType.weight) {
+				ref = new GirlWeight(context);
+			} else {
+				ref = new GirlLength(context);
 			}
 		}
-		return minWeight == Long.MAX_VALUE ? 1800 : minWeight;
+		return ref;
 	}
 
-	private long getHighestWeight(Child child) {
-		long maxWeight = Long.MIN_VALUE;
+	private double roundDown(long lowestMeasurement) {
+		return ((long) Math.floor(lowestMeasurement / 100)) * 100;
+	}
+
+	private double roundUp(long highestMeasurement) {
+		return ((long) Math.ceil(highestMeasurement / 100)) * 100;
+	}
+
+	private long getLowestMeasurement(Child child) {
+		long minMeasurement = Long.MAX_VALUE;
 		for (Measurement measurement : child.getMeasurements()) {
-			if (measurement.getWeight() != null
-					&& measurement.getWeight().longValue() > maxWeight) {
-				maxWeight = measurement.getWeight().longValue();
+			Long value = getValue(measurement);
+			if (value != null && value.longValue() < minMeasurement) {
+				minMeasurement = value.longValue();
 			}
 		}
-		return maxWeight == Long.MAX_VALUE ? 14000 : maxWeight;
+		return minMeasurement == Long.MAX_VALUE ? 1800 : minMeasurement;
+	}
+
+	private long getHighestMeasurement(Child child) {
+		long maxMeasurement = Long.MIN_VALUE;
+		for (Measurement measurement : child.getMeasurements()) {
+			Long value = getValue(measurement);
+			if (value != null && value.longValue() > maxMeasurement) {
+				maxMeasurement = value.longValue();
+			}
+		}
+		return maxMeasurement == Long.MAX_VALUE ? 14000 : maxMeasurement;
 	}
 
 	private void addChildCurve(XYMultipleSeriesRenderer renderer,
@@ -118,9 +154,22 @@ public class WeightChart {
 		XYSeries series = new XYSeries(child.getName());
 		for (Measurement measurement : child.getMeasurements()) {
 			long moment = measurement.getMoment() - child.getDob();
-			series.add(moment / SECONDS_PER_MONTH_AVG, measurement.getWeight());
+			Long value = getValue(measurement);
+			if (value != null) {
+				series.add(moment / SECONDS_PER_MONTH_AVG, value.longValue());
+			}
 		}
 		dataset.addSeries(series);
+	}
+
+	/**
+	 * @param measurement
+	 *            the measurement
+	 * @return the measurement of the moment based on the chart-type
+	 */
+	private Long getValue(Measurement measurement) {
+		return chartType == ChartType.weight ? measurement.getWeight()
+				: measurement.getLength();
 	}
 
 	private void addChildSeriesRenderer(XYMultipleSeriesRenderer renderer,
@@ -151,46 +200,7 @@ public class WeightChart {
 	}
 
 	/**
-	 * Sets a few of the series renderer settings.
-	 * 
-	 * @param renderer
-	 *            the renderer to set the properties to
-	 * @param title
-	 *            the chart title
-	 * @param xTitle
-	 *            the title for the X axis
-	 * @param yTitle
-	 *            the title for the Y axis
-	 * @param xMin
-	 *            the minimum value on the X axis
-	 * @param xMax
-	 *            the maximum value on the X axis
-	 * @param yMin
-	 *            the minimum value on the Y axis
-	 * @param yMax
-	 *            the maximum value on the Y axis
-	 * @param axesColor
-	 *            the axes color
-	 * @param labelsColor
-	 *            the labels color
-	 */
-	protected void setChartSettings(XYMultipleSeriesRenderer renderer,
-			String title, String xTitle, String yTitle, double xMin,
-			double xMax, double yMin, double yMax, int axesColor,
-			int labelsColor) {
-		renderer.setChartTitle(title);
-		renderer.setXTitle(xTitle);
-		renderer.setYTitle(yTitle);
-		renderer.setXAxisMin(xMin);
-		renderer.setXAxisMax(xMax);
-		renderer.setYAxisMin(yMin);
-		renderer.setYAxisMax(yMax);
-		renderer.setAxesColor(axesColor);
-		renderer.setLabelsColor(labelsColor);
-	}
-
-	/**
-	 * Builds a multiple series dataset using the provided values.
+	 * Builds the reference series dataset using the provided values.
 	 * 
 	 * @param titles
 	 *            the series titles
@@ -213,22 +223,6 @@ public class WeightChart {
 			dataset.addSeries(series);
 		}
 		return dataset;
-	}
-
-	/**
-	 * Builds an XY multiple series renderer.
-	 * 
-	 * @return the XY multiple series renderers
-	 */
-	protected XYMultipleSeriesRenderer buildRenderer() {
-		XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
-		renderer.setAxisTitleTextSize(16);
-		renderer.setChartTitleTextSize(20);
-		renderer.setLabelsTextSize(15);
-		renderer.setLegendTextSize(15);
-		renderer.setPointSize(5f);
-		renderer.setMargins(new int[] { 20, 30, 15, 20 });
-		return renderer;
 	}
 
 	private void addRefLineSeriesRenderers(XYMultipleSeriesRenderer renderer) {

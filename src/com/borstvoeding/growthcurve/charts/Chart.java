@@ -72,7 +72,6 @@ public class Chart {
 		renderer.setTextTypeface("sans_serif", Typeface.BOLD);
 		renderer.setLabelsTextSize(14f);
 		renderer.setAxisTitleTextSize(15);
-		renderer.setLegendTextSize(15);
 		renderer.setGridColor(Color.CYAN);
 		renderer.setShowGrid(true);
 

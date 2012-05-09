@@ -9,8 +9,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.borstvoeding.growthcurve.charts.Chart;
 import com.borstvoeding.growthcurve.charts.ChartType;
@@ -26,19 +28,29 @@ public class ChartActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Log.i("gc", "We are in onCreate");
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.chart);
+		boolean customTitleSupported = requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 		Serializable obj = getIntent().getExtras().getSerializable("child");
 		if (obj != null) {
 			child = (Child) obj;
+		}
+		setContentView(R.layout.chart);
+
+		setupTitle(customTitleSupported, child.getName());
+	}
+
+	void setupTitle(boolean customTitleSupported, String title) {
+		if (customTitleSupported) {
+			getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
+					R.layout.chart_title);
+			TextView titleTvLeft = (TextView) findViewById(R.id.titleAboveChart);
+			titleTvLeft.setText(title);
 		}
 	}
 
 	@Override
 	protected void onResume() {
-		Log.i("gc", "We are in onResume");
 		super.onResume();
 
 		if (child == null) {

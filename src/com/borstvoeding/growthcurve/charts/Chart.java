@@ -78,18 +78,18 @@ public class Chart {
 		renderer.setZoomButtonsVisible(true);
 		renderer.setZoomEnabled(true, true);
 
-		Reference ref = getReference();
 		// See which chart we should create
+		Reference ref = getReference();
 		renderer.setChartTitle(ref.getChartTitle());
-		renderer.setYTitle(ref.getChartYTitle());
 
-		// TODO: det. range according to the ref-graph,
-		// not the child's weight/length
 		renderer.setXAxisMin(0);
 		renderer.setXAxisMax(getAgeInMonths(child) + 1);
+		renderer.setXTitle(context.getString(R.string.months));
+		// TODO: det. Y-range according to the ref-graph,
+		// not the child's weight/length
 		renderer.setYAxisMin(roundDown(getLowestMeasurement(child)));
 		renderer.setYAxisMax(roundUp(getHighestMeasurement(child)));
-		renderer.setXTitle(context.getString(R.string.months));
+		renderer.setYTitle(ref.getChartYTitle());
 
 		addRefLineSeriesRenderers(renderer);
 

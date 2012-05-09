@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 
 import com.borstvoeding.growthcurve.R;
 import com.borstvoeding.growthcurve.db.Child;
@@ -87,8 +88,12 @@ public class Chart {
 		renderer.setXTitle(context.getString(R.string.months));
 		// TODO: det. Y-range according to the ref-graph,
 		// not the child's weight/length
-		renderer.setYAxisMin(roundDown(getLowestMeasurement(child)));
-		renderer.setYAxisMax(roundUp(getHighestMeasurement(child)));
+		long lowest = chartType == ChartType.length ? 35 : 1800; // getLowestMeasurement(child);
+		long highest = getHighestMeasurement(child);
+		Log.i("gc-chart",
+				String.format("lowest: %d, highest: %d", lowest, highest));
+		renderer.setYAxisMin(lowest);
+		renderer.setYAxisMax(roundUp(highest));
 		renderer.setYTitle(ref.getChartYTitle());
 
 		addRefLineSeriesRenderers(renderer);

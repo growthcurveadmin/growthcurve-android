@@ -88,11 +88,12 @@ public class Chart {
 		// TODO: det. Y-range according to the ref-graph,
 		// not the child's weight/length
 		long lowest = chartType == ChartType.length ? 35 : 1800; // getLowestMeasurement(child);
-		long highest = getHighestMeasurement(child);
+		double highest = ref.getMaxValue(child
+				.getTimespanBetweenDobAndLastMeasurement());
 		Log.i("gc-chart",
-				String.format("lowest: %d, highest: %d", lowest, highest));
+				String.format("lowest: %d, highest: %f", lowest, highest));
 		renderer.setYAxisMin(lowest);
-		renderer.setYAxisMax(roundUp(highest));
+		renderer.setYAxisMax(highest);
 		renderer.setYTitle(ref.getChartYTitle());
 
 		addRefLineSeriesRenderers(renderer);

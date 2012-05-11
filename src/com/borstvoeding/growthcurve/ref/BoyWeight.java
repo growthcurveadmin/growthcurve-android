@@ -7,7 +7,7 @@ import android.content.Context;
 
 import com.borstvoeding.growthcurve.R;
 
-public class BoyWeight implements Reference {
+public class BoyWeight extends BaseRef implements Reference {
 	private static final double[] refM2 = new double[] { 5010.4, 5270.8,
 			5645.8, 6083.3, 6500.0, 6906.3, 7260.4, 7593.8, 7895.8, 8166.7,
 			8427.1, 8666.7, 8885.4, 9093.8, 9291.7, 9479.2, 9656.3, 9833.3,

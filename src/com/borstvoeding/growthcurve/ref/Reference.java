@@ -17,4 +17,10 @@ public interface Reference {
 	 * @return the reference values per week
 	 */
 	List<double[]> getValues();
+
+	/**
+	 * @param timespanBetweenDobAndLastMeasurement
+	 * @return the highest value of this reference curve
+	 */
+	double getMaxValue(long timespanBetweenDobAndLastMeasurement);
 }

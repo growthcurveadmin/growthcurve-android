@@ -96,4 +96,22 @@ public class Child implements Serializable {
 	public List<Measurement> getMeasurements() {
 		return measurements;
 	}
+
+	/**
+	 * @return the number of seconds between dob and the measurement of the
+	 *         youngest date.
+	 */
+	public long getTimespanBetweenDobAndLastMeasurement() {
+		long lastMeasurement = Long.MIN_VALUE;
+		for (Measurement measurement : measurements) {
+			if (measurement.getMoment() > lastMeasurement) {
+				lastMeasurement = measurement.getMoment();
+			}
+		}
+		long timespan = lastMeasurement - dob;
+		if (lastMeasurement == Long.MAX_VALUE || timespan < 0) {
+			return 0;
+		}
+		return timespan;
+	}
 }

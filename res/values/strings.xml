@@ -16,4 +16,5 @@
     <string name="chartLengthYTitle">cm</string>
     <string name="weeks">weeks</string>
     <string name="months">months</string>
+    <string name="preferences">Preferences</string>
 </resources>

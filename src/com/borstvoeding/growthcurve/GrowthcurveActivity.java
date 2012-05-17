@@ -30,8 +30,8 @@ public class GrowthcurveActivity extends ListActivity {
 	private static final Logger LOG = Logger
 			.getLogger(GrowthcurveActivity.class.getName());
 
-	private static final int ID_MENU_SETTINGS = 0;
 	private static final int ID_MENU_RELOAD = 1;
+	private static final int ID_MENU_PREFERENCES = 2;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -58,23 +58,23 @@ public class GrowthcurveActivity extends ListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		MenuItem itemSettings = menu.add(Menu.NONE, ID_MENU_SETTINGS,
-				Menu.NONE, R.string.Settings);
-		itemSettings.setShortcut('5', 's');
 		MenuItem itemReload = menu.add(Menu.NONE, ID_MENU_RELOAD, Menu.NONE,
 				R.string.Reload);
 		itemReload.setShortcut('7', 'r');
+		MenuItem itemPreferences = menu.add(Menu.NONE, ID_MENU_PREFERENCES,
+				Menu.NONE, R.string.preferences);
+		itemPreferences.setShortcut('9', 'p');
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case ID_MENU_SETTINGS:
-			startSettings();
-			return true;
 		case ID_MENU_RELOAD:
 			reloadChildren();
+			return true;
+		case ID_MENU_PREFERENCES:
+			startPreferences();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -100,11 +100,11 @@ public class GrowthcurveActivity extends ListActivity {
 	}
 
 	private void checkedLoadChildren(DatabaseHandler db) {
-		Settings settings = Settings.INSTANCE(this);
+		Settings settings = new Settings(this);
 		if (settings.getUsername() == null
 				|| settings.getUsername().trim().length() == 0) {
 			showMessage("Please goto settings first to setup access");
-			startSettings();
+			startPreferences();
 		} else {
 			loadChildren(db, settings);
 		}
@@ -158,10 +158,10 @@ public class GrowthcurveActivity extends ListActivity {
 		reloadList(db);
 	}
 
-	private void startSettings() {
-		Intent settingsIntent = new Intent(getApplicationContext(),
-				SettingsActivity.class);
-		startActivityForResult(settingsIntent, 0);
+	private void startPreferences() {
+		Intent preferencesIntent = new Intent(getApplicationContext(),
+				GcPreferenceActivity.class);
+		startActivityForResult(preferencesIntent, 0);
 	}
 
 	private void showMessage(String message) {

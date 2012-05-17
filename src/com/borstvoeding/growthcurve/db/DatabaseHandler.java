@@ -20,6 +20,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	private static final String KEY_ID = "_id";
 	public static final String KEY_NAME = "name";
 	private static final String KEY_DOB = "dob";
+	private static final String SQL_GET_CHILDREN = "SELECT " //
+			+ KEY_ID + ", " //
+			+ KEY_NAME + ", " //
+			+ "strftime('%m/%d/%Y', " + KEY_DOB + ", 11) AS dt" //
+			+ " FROM " //
+			+ TABLE_CHILDREN;
 	private static final String KEY_GENDER = "gender";
 	private static final String KEY_STORY = "story";
 
@@ -217,9 +223,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 	public Cursor getCursorOnAllChildren() {
 		SQLiteDatabase db = this.getReadableDatabase();
-		return db.rawQuery("SELECT " + KEY_ID + ", " + KEY_NAME
-				+ ", strftime('%m/%d/%Y', " + KEY_DOB + ", 11) AS dt FROM "
-				+ TABLE_CHILDREN, null);
+		return db.rawQuery(SQL_GET_CHILDREN, null);
 
 		// String orderBy = KEY_NAME;
 		// return db.query(TABLE_CHILDREN, new String[] { KEY_ID, KEY_NAME,

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:key="first_category"
+        android:title="Account settings" >
+        <EditTextPreference
+            android:defaultValue="http://www.borstvoeding.com/groeicurve-2012-04-10/"
+            android:dialogMessage="The base URL that points to the growthcurve site"
+            android:dialogTitle="The base URL"
+            android:key="base_url"
+            android:summary="Give the base URL that points to the growthcurve site"
+            android:title="Base URL" />
+        <EditTextPreference
+            android:defaultValue=""
+            android:dialogMessage="Your username at the growthcurve site"
+            android:dialogTitle="Your username"
+            android:key="username"
+            android:summary="Give your username at the growthcurve site"
+            android:title="Username" />
+        <EditTextPreference
+            android:defaultValue=""
+            android:dialogMessage="Your password at the growthcurve site"
+            android:dialogTitle="Your password"
+            android:inputType="textPassword"
+            android:key="password"
+            android:summary="Give your password at the growthcurve site"
+            android:title="Password" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

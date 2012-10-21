@@ -2,15 +2,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory
-        android:key="first_category"
+        android:key="account_settings"
         android:title="Account settings" >
-        <EditTextPreference
-            android:defaultValue="http://www.borstvoeding.com/groeicurve-2012-04-10/"
-            android:dialogMessage="The base URL that points to the growthcurve site"
-            android:dialogTitle="The base URL"
-            android:key="base_url"
-            android:summary="Give the base URL that points to the growthcurve site"
-            android:title="Base URL" />
+        
         <EditTextPreference
             android:defaultValue=""
             android:dialogMessage="Your username at the growthcurve site"
@@ -27,5 +21,6 @@
             android:summary="Give your password at the growthcurve site"
             android:title="Password" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Site settings" android:key="site_settings"><EditTextPreference android:defaultValue="http://www.borstvoeding.com/groeicurve-2012-04-10/" android:dialogMessage="The base URL that points to the growthcurve site" android:dialogTitle="The base URL" android:key="base_url" android:summary="Give the base URL that points to the growthcurve site" android:title="Base URL" /></PreferenceCategory>
 
 </PreferenceScreen>

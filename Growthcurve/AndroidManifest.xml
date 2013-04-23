@@ -6,9 +6,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <uses-sdk
-        android:minSdkVersion="4"
-        android:targetSdkVersion="4" />
+    <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="4" />
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -22,12 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.borstvoeding.growthcurve.GcPreferenceActivity" />
-        <activity android:name="com.borstvoeding.growthcurve.ChartActivity" />
-        <activity android:name="com.borstvoeding.growthcurve.ChartsActivity" />
-        <activity android:name="com.borstvoeding.growthcurve.TabLengthActivity" />
-        <activity android:name="com.borstvoeding.growthcurve.TabWeightActivity" />
+        <activity android:name=".GcPreferenceActivity"/>
+        <activity android:name=".ChartActivity"/>
         <activity android:name="org.achartengine.GraphicalActivity" />
     </application>
-
 </manifest>

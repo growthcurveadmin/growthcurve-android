@@ -37,9 +37,6 @@ public class ChartActivity extends Activity {
 		}
 		setContentView(R.layout.chart);
 
-		//TabHost tabHost = (TabHost) findViewById(R.id.the_host);
-		//tabHost.setup();
-
 		setupTitle(customTitleSupported, child.getName());
 	}
 
@@ -65,14 +62,14 @@ public class ChartActivity extends Activity {
 			mCurrentChartView.repaint();
 		}
 
-		// mButton = (Button) findViewById(R.id.btOther);
+		mButton = (Button) findViewById(R.id.btOther);
 		mButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				switchCharts();
 			}
 		});
-		// mLayout = (LinearLayout) findViewById(R.id.chart);
+		mLayout = (LinearLayout) findViewById(R.id.chart);
 
 		mWeightChartView = new Chart(getApplicationContext(), child,
 				ChartType.weight).createView();

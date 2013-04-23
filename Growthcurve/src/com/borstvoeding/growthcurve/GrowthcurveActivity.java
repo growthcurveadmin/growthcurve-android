@@ -147,7 +147,7 @@ public class GrowthcurveActivity extends ListActivity {
 		DatabaseHandler db = new DatabaseHandler(getApplicationContext());
 		Child child = db.getChild((int) id);
 		Intent chartIntent = new Intent(getApplicationContext(),
-				ChartsActivity.class);
+				ChartActivity.class);
 		chartIntent.putExtra("child", child);
 		startActivityForResult(chartIntent, 1);
 	}

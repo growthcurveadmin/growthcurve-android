@@ -1,0 +1,187 @@
+  {
+    "child_id": "6375",
+    "name": "Andrin Josha Djurre",
+    "gender": "m",
+    "date": null,
+    "story": "Een thuisbevallen jongen. Heerlijk om nog een wonder te hebben ontvangen.",
+    "dob": "1202011200",
+    "age": null,
+    "measurements": [
+      {
+        "child_id": "6375",
+        "measurement_id": "1",
+        "moment": "1202011200",
+        "weight": "4200",
+        "comments": "",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "2",
+        "moment": "1202097600",
+        "weight": "4040",
+        "comments": "Maar dan wel MET gips",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "4",
+        "moment": "1202702400",
+        "weight": "4210",
+        "comments": "",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "5",
+        "moment": "1203307200",
+        "weight": "4270",
+        "comments": "",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "7",
+        "moment": "1203912000",
+        "weight": "4570",
+        "comments": "",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "6",
+        "moment": "1204516800",
+        "weight": "4845",
+        "comments": "",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "8",
+        "moment": "1205121600",
+        "weight": "5030",
+        "comments": "",
+        "length": "58"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "9",
+        "moment": "1205726400",
+        "weight": "5335",
+        "comments": "",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "10",
+        "moment": "1206932400",
+        "weight": "5540",
+        "comments": "",
+        "length": "62"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "11",
+        "moment": "1211252400",
+        "weight": "6525",
+        "comments": "",
+        "length": "67"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "12",
+        "moment": "1214794800",
+        "weight": "7140",
+        "comments": "",
+        "length": "68"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "14",
+        "moment": "1222743600",
+        "weight": "8210",
+        "comments": "",
+        "length": "72"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "15",
+        "moment": "1226894400",
+        "weight": "8460",
+        "comments": "",
+        "length": "72"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "16",
+        "moment": "1231214400",
+        "weight": "8515",
+        "comments": "",
+        "length": "74"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "17",
+        "moment": "1234756800",
+        "weight": "8840",
+        "comments": "en hierna na de ha",
+        "length": "74"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "18",
+        "moment": "1236571200",
+        "weight": "9155",
+        "comments": "en vrijdag naar de kinderarts",
+        "length": null
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "19",
+        "moment": "1240196400",
+        "weight": "9570",
+        "comments": "",
+        "length": "77"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "20",
+        "moment": "1252638000",
+        "weight": "9965",
+        "comments": "met heit mee naar het cb",
+        "length": "80"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "21",
+        "moment": "1269918000",
+        "weight": "10900",
+        "comments": "",
+        "length": "85"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "22",
+        "moment": "1290830400",
+        "weight": "12000",
+        "comments": "op de doucheweegschaal thuis, CB is zo lang geleden",
+        "length": "90"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "23",
+        "moment": "1291003200",
+        "weight": "14001",
+        "comments": "test2",
+        "length": "92"
+      },
+      {
+        "child_id": "6375",
+        "measurement_id": "24",
+        "moment": "1291089600",
+        "weight": "14002",
+        "comments": "test3",
+        "length": "93"
+      }
+    ]
+  }
